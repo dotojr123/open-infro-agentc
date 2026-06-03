@@ -13,8 +13,8 @@ export class ComputerUseTools {
     description: 'Moves the mouse cursor to the specified coordinates.',
     parameters: z.object({
       coordinates: z.object({
-        x: z.number().describe('The x-coordinate to move the mouse to.'),
-        y: z.number().describe('The y-coordinate to move the mouse to.'),
+        x: z.number().min(0).int().describe('The x-coordinate to move the mouse to.'),
+        y: z.number().min(0).int().describe('The y-coordinate to move the mouse to.'),
       }),
     }),
   })
@@ -42,8 +42,8 @@ export class ComputerUseTools {
       path: z
         .array(
           z.object({
-            x: z.number().describe('The x-coordinate to move the mouse to.'),
-            y: z.number().describe('The y-coordinate to move the mouse to.'),
+            x: z.number().min(0).int().describe('The x-coordinate to move the mouse to.'),
+            y: z.number().min(0).int().describe('The y-coordinate to move the mouse to.'),
           }),
         )
         .describe('An array of coordinate objects representing the path.'),
@@ -84,8 +84,8 @@ export class ComputerUseTools {
     parameters: z.object({
       coordinates: z
         .object({
-          x: z.number().describe('The x-coordinate to move the mouse to.'),
-          y: z.number().describe('The y-coordinate to move the mouse to.'),
+          x: z.number().min(0).int().describe('The x-coordinate to move the mouse to.'),
+          y: z.number().min(0).int().describe('The y-coordinate to move the mouse to.'),
         })
         .optional()
         .describe(
@@ -144,8 +144,8 @@ export class ComputerUseTools {
     parameters: z.object({
       coordinates: z
         .object({
-          x: z.number().describe('The x-coordinate for the mouse action.'),
-          y: z.number().describe('The y-coordinate for the mouse action.'),
+          x: z.number().min(0).int().describe('The x-coordinate for the mouse action.'),
+          y: z.number().min(0).int().describe('The y-coordinate for the mouse action.'),
         })
         .optional()
         .describe(
@@ -199,10 +199,10 @@ export class ComputerUseTools {
         .array(
           z.object({
             x: z
-              .number()
+              .number().min(0).int()
               .describe('The x-coordinate of a point in the drag path.'),
             y: z
-              .number()
+              .number().min(0).int()
               .describe('The y-coordinate of a point in the drag path.'),
           }),
         )
@@ -256,12 +256,12 @@ export class ComputerUseTools {
       coordinates: z
         .object({
           x: z
-            .number()
+            .number().min(0).int()
             .describe(
               'The x-coordinate for the scroll action (if applicable).',
             ),
           y: z
-            .number()
+            .number().min(0).int()
             .describe(
               'The y-coordinate for the scroll action (if applicable).',
             ),
@@ -350,8 +350,10 @@ V, W, X, Y, Z`,
         ),
       delay: z
         .number()
+        .min(0)
+        .max(500)
         .optional()
-        .describe('Optional delay in milliseconds between key presses.'),
+        .describe('Optional delay in milliseconds between key presses (max 500ms).'),
     }),
   })
   async typeKeys({ keys, delay }: { keys: string[]; delay?: number }) {
@@ -433,8 +435,10 @@ V, W, X, Y, Z
       text: z.string().describe('The text string to type.'),
       delay: z
         .number()
+        .min(0)
+        .max(500)
         .optional()
-        .describe('Optional delay in milliseconds between key presses.'),
+        .describe('Optional delay in milliseconds between key presses (max 500ms).'),
     }),
   })
   async typeText({ text, delay }: { text: string; delay?: number }) {
@@ -483,8 +487,10 @@ V, W, X, Y, Z
     parameters: z.object({
       duration: z
         .number()
+        .min(0)
+        .max(10000)
         .default(500)
-        .describe('The duration to wait in milliseconds.'),
+        .describe('The duration to wait in milliseconds (max 10s).'),
     }),
   })
   async wait({ duration }: { duration: number }) {

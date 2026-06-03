@@ -355,9 +355,41 @@ export class ComputerUseService {
       commandMap[action.application],
     ]);
 
-    this.logger.log(`Application ${action.application} launched`);
+    this.logger.log(`Application ${action.application} launched, waiting for window to be ready...`);
 
-    // Just return immediately
+    // Wait until the window is ready by polling wmctrl
+    const maxRetries = 20; // 10 seconds total wait (20 * 500ms)
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const { stdout } = await execFileAsync(
+          'sudo',
+          ['-u', 'user', 'wmctrl', '-lx'],
+          { timeout: 1000 },
+        );
+        if (stdout.includes(processMap[action.application])) {
+          this.logger.log(`Application ${action.application} window is ready`);
+
+          // Maximize it right after it opens
+          spawnAndForget('sudo', [
+            '-u',
+            'user',
+            'wmctrl',
+            '-x',
+            '-r',
+            processMap[action.application],
+            '-b',
+            'add,maximized_vert,maximized_horz',
+          ]);
+
+          return;
+        }
+      } catch (e) {
+        // Ignore errors during polling
+      }
+      await this.delay(500);
+    }
+
+    this.logger.warn(`Application ${action.application} launched but window ready check timed out`);
     return;
   }
 
@@ -374,6 +406,10 @@ export class ComputerUseService {
       let targetPath = action.path;
       if (!path.isAbsolute(targetPath)) {
         targetPath = path.join('/home/user/Desktop', targetPath);
+      }
+      targetPath = path.normalize(targetPath);
+      if (!targetPath.startsWith('/home/user/')) {
+        throw new Error('Access denied: Paths must be within /home/user/');
       }
 
       // Ensure directory exists using sudo
@@ -431,6 +467,10 @@ export class ComputerUseService {
       let targetPath = action.path;
       if (!path.isAbsolute(targetPath)) {
         targetPath = path.join('/home/user/Desktop', targetPath);
+      }
+      targetPath = path.normalize(targetPath);
+      if (!targetPath.startsWith('/home/user/')) {
+        throw new Error('Access denied: Paths must be within /home/user/');
       }
 
       // Copy file to temp location using sudo to read it
